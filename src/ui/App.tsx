@@ -1,31 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import Timer from "./components/timer";
+import Tasks from "./components/tasks";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const POMODORO_TIME = 25;
+  const SHORT_BREAK = 5;
+  const LONG_BREAK = 15;
+  const CYCLES_BEFORE_LONG_BREAK = 5;
+
+  const [initialTime, setInitialTime] = useState(POMODORO_TIME);
+  const [mode, setMode] = useState<"pomodoro" | "shortbreak" | "longBreak">("pomodoro");
+  const [pomodoroCount, setPomodoroCount] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleNextClick = () => {
+    setIsRunning(false);
+
+    if (mode === "pomodoro") {
+      if (pomodoroCount > 0 && pomodoroCount % CYCLES_BEFORE_LONG_BREAK === 0) {
+        setMode("longBreak");
+        setInitialTime(LONG_BREAK);
+      } else {
+        setMode("shortbreak");
+        setInitialTime(SHORT_BREAK);
+      }
+    } else {
+      setMode("pomodoro");
+      setInitialTime(POMODORO_TIME);
+      setPomodoroCount((prev) => prev + 1);
+    }
+  };
+
+  const handleRestartClick = () => {
+    setIsRunning(false);
+    setPomodoroCount(0);
+    setMode("pomodoro");
+    setInitialTime(POMODORO_TIME);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
         <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+          {mode === "pomodoro" && `Pomodoro Time #${pomodoroCount}`}
+          {mode === "shortbreak" && `Short Break #${pomodoroCount}`}
+          {mode === "longBreak" && `Long Break #${pomodoroCount}`}
         </p>
+        <Timer initialTime={initialTime} isRunning={isRunning} setIsRunning={setIsRunning} />
+        <button onClick={handleNextClick}>Next</button>
+        <button onClick={handleRestartClick}>Restart</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div>
+        <Tasks />
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
